@@ -4,6 +4,8 @@ const Users = require("../models/users-model");
 
 const bcrypt = require("bcryptjs");
 
+const restricted = require("../middleware/restricted");
+
 router.post("/register", (req, res) => {
   let user = req.body;
   const hashPass = bcrypt.hashSync(user.password, 12);
@@ -18,21 +20,8 @@ router.post("/register", (req, res) => {
     });
 });
 
-router.post("/login", (req, res) => {
-  let { username, password } = req.body;
-
-  Users.findBy({ username })
-    .first()
-    .then(user => {
-      if (user && bcrypt.compareSync(password, user.password)) {
-        return res.status(200).json(user);
-      } else {
-        return res.status(404).json({ message: "user not found" });
-      }
-    })
-    .catch(err => {
-      res.status(500).json(err);
-    });
+router.post("/login", restricted, (req, res) => {
+  res.status(200).json(req.user);
 });
 
 module.exports = router;
