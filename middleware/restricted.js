@@ -2,21 +2,15 @@ const Users = require("../models/users-model");
 const bcrypt = require("bcryptjs");
 
 function restricted(req, res, next) {
-  let { username, password } = req.body;
-
-  Users.findBy({ username })
-    .first()
-    .then(user => {
-      if (user && bcrypt.compareSync(password, user.password)) {
-        req.user = user;
-        next();
-      } else {
-        return res.status(404).json({ message: "user not found" });
-      }
-    })
-    .catch(err => {
-      res.status(500).json(err);
-    });
+  if (req.session.user) {
+    next();
+  } else {
+    res
+      .status(400)
+      .json({
+        message: "no cookie, or cookie without a valid session id in the monkey"
+      });
+  }
 }
 
 module.exports = restricted;
